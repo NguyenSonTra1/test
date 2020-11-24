@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 var Dishes = require("../model/dishes")
 
 module.exports = function (app){
-    app.post("/dishes",(req,res)=>{
+    app.post("/upload_dishes",(req,res)=>{
         const name = req.body.name;
         const image = req.body.image;
         const category = req.body.category;
@@ -21,7 +21,12 @@ module.exports = function (app){
         newDishes.save()
 
     })
+    app.get("/dishes",async(req,res)=>{
+        const dishes = await Dishes.find({})
+        //res.send("This is a page to collect data about dishes!");
+        res.json({dishes:dishes})
+    })
     app.get('/',(req,res)=>{
-        res.json("oke")
+        res.send("ok, this is the main page!")
     })
 }
