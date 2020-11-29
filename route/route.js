@@ -49,7 +49,7 @@ module.exports = function (app){
         
     })
     app.get('/signup',(req,res)=>{
-        res.send("signup page!")
+        res.send("signup page!dasdasdas")
     })
 
     app.get('/',(req,res)=>{
