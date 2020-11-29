@@ -41,12 +41,15 @@ module.exports = function (app){
             newUser.local.email = email;
             newUser.local.password = newUser.generateHash(password);
             newUser.save();
-            res.send("ok")
+            res.json({success:"1"})
         }else{
-            res.send("error")
+            res.json({success:"0"})
         }
        
         
+    })
+    app.get('/signup',(req,res)=>{
+        res.send("signup page!")
     })
 
     app.get('/',(req,res)=>{
