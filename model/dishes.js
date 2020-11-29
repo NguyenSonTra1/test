@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 var moment = require("moment");
 
 var Dishes = mongoose.Schema({
-    time: { type: String, default: () => moment().format("DD/MM/YYYY") },
+    time: { type: String, default: () => moment().format("hh:mm a, DD/MM/YYYY")},
     name: String,
     image:String,
     category: String, 
