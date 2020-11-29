@@ -35,7 +35,7 @@ module.exports = function (app){
         const email = req.body.email;
         const password = req.body.password;
         var user = await Users.find({"local.email":email})
-        if(user=="[]"){
+        if(user==""){
             const newUser = new Users();
             newUser.local.name = name;
             newUser.local.email = email;
