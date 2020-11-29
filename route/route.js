@@ -30,7 +30,7 @@ module.exports = function (app){
     })
 
     // USER
-    app.post("/signup",async (req,res)=>{
+    app.post("/register",async (req,res)=>{
         const name = req.body.name;
         const email = req.body.email;
         const password = req.body.password;
@@ -48,7 +48,7 @@ module.exports = function (app){
        
         
     })
-    app.get('/signup',(req,res)=>{
+    app.get('/register',(req,res)=>{
         res.send("signup page!dasdasdas")
     })
 
