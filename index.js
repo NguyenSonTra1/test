@@ -11,6 +11,8 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(bodyParser.json())
 bodyParser.urlencoded({ extended: false })
+app.set("view engine", "ejs");
+app.set("views", "./view");
 
 mongoose.connect(db.url, { useNewUrlParser: true, useUnifiedTopology: true},()=>{
     console.log("connect mongo!")
