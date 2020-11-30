@@ -39,7 +39,7 @@ module.exports = function (app){
         newDishes.save()
 
     })
-    app.get('nst',(req,res)=>{
+    app.get('/nst',(req,res)=>{
         res.json("ok")
     })
     app.get("/upload_dishes",(req,res)=>{
