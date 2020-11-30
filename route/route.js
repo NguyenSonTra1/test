@@ -17,12 +17,11 @@ module.exports = function (app){
         form.maxFieldsSize = 10 * 1024 * 1024;
         form.multiples = true;
         form.parse(req, function (err, fields, files) {
-            var file = files.avatar.path.split("\\")[1];
+            var file = files.image.path.split("\\")[1];
             const urlimage = `https://androidapp-reservation.herokuapp.com:8080/open_image?image_name=${file}`;
             console.log(urlimage)
-        })
-        const name = req.body.name;
-        const image = req.body.image;
+            const name = req.body.name;
+        const image = urlimage;
         const category = req.body.category;
         const label = req.body.label;
         const price = req.body.price;
@@ -37,6 +36,8 @@ module.exports = function (app){
         newDishes.featured = featured;
         newDishes.description = description;
         newDishes.save()
+        })
+        
 
     })
     app.get('/nst',(req,res)=>{
