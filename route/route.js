@@ -40,7 +40,7 @@ module.exports = function (app){
 
     })
     app.get('nst',(req,res)=>{
-        res.send("ok")
+        res.json("ok")
     })
     app.get("/upload_dishes",(req,res)=>{
        res.send("ok")
