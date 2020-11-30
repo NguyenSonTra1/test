@@ -20,13 +20,13 @@ module.exports = function (app){
             var file = files.image.path.split("\\")[1];
             const urlimage = `https://androidapp-reservation.herokuapp.com:8080/open_image?image_name=${file}`;
             console.log(urlimage)
-            const name = req.body.name;
+        const name = fields.name;
         const image = urlimage;
-        const category = req.body.category;
-        const label = req.body.label;
-        const price = req.body.price;
-        const featured = req.body. featured;
-        const description = req.body. description;
+        const category = fields.category;
+        const label = fields.label;
+        const price = fields.price;
+        const featured = fields. featured;
+        const description = fields. description;
         const newDishes = new Dishes();
         newDishes.name = name;
         newDishes.image = image;
