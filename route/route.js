@@ -43,7 +43,7 @@ module.exports = function (app){
         res.json("ok")
     })
     app.get("/upload_dishes",(req,res)=>{
-       res.send("ok")
+       res.render("upload")
     })
     app.get("/open_image", function (req, res, next) {
         let imageName = "images/" + req.query.image_name;
