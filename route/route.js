@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var bcrypt = require("bcrypt-nodejs");
 var fs = require("fs")
 var formidable = require("formidable")
 var Dishes = require("../model/dishes")
@@ -60,7 +61,7 @@ module.exports = function (app){
         res.json(dishes)
     })
 
-    // USER
+    // REGISTER
     app.post("/register",async (req,res)=>{
         const name = req.body.name;
         const email = req.body.email;
@@ -76,11 +77,29 @@ module.exports = function (app){
         }else{
             res.json({success:"0"})
         }
-       
-        
     })
     app.get('/register',(req,res)=>{
         res.send("signup page!dasdasdas")
+    })
+
+    //LOGIN
+    app.post("/login",async (req,res)=>{
+        var Email = req.body.email;
+        var PassWord = req.body.password;
+        var user = await Users.find({"local.email":Email})
+        if(user==""){
+            res.json({success:0})
+        }
+        else{
+            var compare = bcrypt.compareSync(PassWord,user[0].local.password)
+            if(compare==false){
+                res.json({success:2})
+            }
+            if(compare==true){
+                res.json({success:1,user:user})
+            }
+        }
+
     })
 
     //COMMENT
