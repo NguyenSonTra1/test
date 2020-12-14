@@ -19,7 +19,8 @@
     "formidable": "^1.2.2",
     "moment": "^2.29.1",
     "mongoose": "^5.10.15",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "node-cron": "^2.0.3"
   },
   "engines": {
     "node": "15.x"
