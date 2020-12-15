@@ -13,7 +13,7 @@ var Tables = require("../model/tables");
 const { format } = require("path");
 
 module.exports = function (app) {
-    //DISHES
+    //ADD DISHES
     app.post("/upload_dishes", (req, res) => {
         const form = new formidable.IncomingForm();
         form.uploadDir = "./images";
@@ -40,6 +40,7 @@ module.exports = function (app) {
             newDishes.featured = featured;
             newDishes.description = description;
             newDishes.save()
+            res.json("ok")
         })
 
 
@@ -52,6 +53,37 @@ module.exports = function (app) {
             res.end(imageData);
         })
     })
+    //DELETE DISHES
+    app.post('/delete_dishes/:dishesId', async (req, res) => {
+        var dishesId = req.params.dishesId;
+        var dishesDelete = await Dishes.deleteOne({ _id: dishesId })
+        res.json("ok")
+    })
+    //UPDATE DISHES
+    app.post("/update_dishes/:dishesId", (req, res) => {
+        var dishesId = req.params.dishesId
+        const form = new formidable.IncomingForm();
+        form.uploadDir = "./images";
+        form.keepExtensions = true;
+        form.maxFieldsSize = 10 * 1024 * 1024;
+        form.multiples = true;
+        form.parse(req, async function (err, fields, files) {
+            var file = files.image.path.split("\\")[1];
+            const urlimage = `https://androidapp-reservation.herokuapp.com/open_image?image_name=${file}`;
+            console.log(urlimage)
+            const name = fields.name;
+            const image = urlimage;
+            const category = fields.category;
+            const label = fields.label;
+            const price = fields.price;
+            const featured = fields.featured;
+            const description = fields.description;
+            const dishesUpdate = await Dishes.updateOne({ _id: dishesId }, { name: name, image: image, category: category, label: label, price: price, featured: featured, description: description })
+            res.json("ok")
+        })
+
+    })
+
     app.get("/dishes", async (req, res) => {
         const dishes = await Dishes.find({})
         //res.send("This is a page to collect data about dishes!");
@@ -468,18 +500,21 @@ module.exports = function (app) {
     app.post('/add_tables', (req, res) => {
         var name = req.body.name;
         var category = req.body.category;
+        var distinction = req.body.distinction;
         var newTables = new Tables();
         newTables.name = name;
         newTables.category = category;
+        newTables.distinction = distinction
         newTables.save();
         res.json("ok")
     })
 
     //RESERVATION TABLES
-    app.post('/reservation_tables', async (req, res) => {
+    app.post('/reservation_tables/:userId', async (req, res) => {
         var t = 0;//check then send to client
-        var check2 =[];
-        var userId = req.body.userId; //BILLID VA USERID CHUA XONG!!!
+        var check2 = [];
+        var distinction = req.body.distinction;
+        var userId = req.params.userId;
         var dishesId = req.body.dishesId;
         var notice = req.body.notice;
         var date = req.body.date;
@@ -493,26 +528,27 @@ module.exports = function (app) {
         var Year = converDate[0];
         var Month = converDate[1];
         var Day = converDate[2];
-        var convert = Hour+"-"+Min + "-" + date;
+        var convert = Hour + "-" + Min + "-" + date;
         //console.log(convert)
         if (people <= 2) people = 2;
         if (people > 2 && people <= 4) people = 4;
         if (people > 4 && people <= 6) people = 6;
         if (people > 6 && people <= 8) people = 8;
         if (people > 8 && people <= 10) people = 10;
-        var tableAvailable = await Tables.find({ category: people})
-        for(var i = 0; i<tableAvailable.length;i++){
+
+        var tableAvailable = await Tables.find({ category: people, distinction:distinction})
+        for (var i = 0; i < tableAvailable.length; i++) {
             var check = [];
-            
-            if(tableAvailable[i].time == ""){
+
+            if (tableAvailable[i].time == "") {
                 //console.log("ok")
-                var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, {$push:{  time: [convert], people: [numPeople],userId:[userId] ,dishesId:[0],notice:[0]},check:"1"});
-                t=1;
+                var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [0], notice: [notice] }, check: "1" });
+                t = 1;
                 break;
             }
-            else{
-                for(var j = 0; j<tableAvailable[i].time.length;j++){
-                    var che=0;
+            else {
+                for (var j = 0; j < tableAvailable[i].time.length; j++) {
+                    var che = 0;
                     //console.log(tableAvailable[i].time[j])
                     var transTime = tableAvailable[i].time[j].split("-")
                     //console.log(transTime)
@@ -522,97 +558,99 @@ module.exports = function (app) {
                     var month = transTime[3];
                     var day = transTime[4];
 
-                    if(Year==year&&Month==month&&Day==day){
-                       // console.log("yyyy")
-                        if(min==00){
+                    if (Year == year && Month == month && Day == day) {
+                        // console.log("yyyy")
+                        if (min == 00) {
                             //console.log("00")
-                            if(Hour==hour&&Min==30){
-                               // console.log("01")
-                                che=0;
-                                
-                            }else
-                            if(Hour==hour&&Min==min){
-                                //console.log("02")
-                                che=0;
-                                
-                            }else
-                            if(Hour==hour-1&&Min==30){
-                                //console.log("03")
-                                che=0;
-                                
-                            }
-                            else{
-                               //console.log("04")
-                                che =1;
-                                
-                            }
+                            if (Hour == hour && Min == 30) {
+                                // console.log("01")
+                                che = 0;
+
+                            } else
+                                if (Hour == hour && Min == min) {
+                                    //console.log("02")
+                                    che = 0;
+
+                                } else
+                                    if (Hour == hour - 1 && Min == 30) {
+                                        //console.log("03")
+                                        che = 0;
+
+                                    }
+                                    else {
+                                        //console.log("04")
+                                        che = 1;
+
+                                    }
                         }
-                        if(min==30){
+                        if (min == 30) {
                             //console.log("30")
-                            if(Hour==hour&&Min==0){
-                                che=0;
-                                
-                            }else if(Hour==hour&&Min==min){
+                            if (Hour == hour && Min == 0) {
+                                che = 0;
+
+                            } else if (Hour == hour && Min == min) {
                                 //console.log("02")
-                                che=0;
-                                
-                            }else if(Hour+1==hour&&Min==0){
+                                che = 0;
+
+                            } else if (Hour + 1 == hour && Min == 0) {
                                 //console.log("03")
-                                che=0
-                                
-                            }else{
+                                che = 0
+
+                            } else {
                                 //console.log("04")
-                                che=1;
-                                
+                                che = 1;
+
                             }
                         }
-                    }else{
+                    } else {
                         //console.log("auto")
-                        che=1;
+                        che = 1;
                     }
-                    
+
                     check.push(che)
                 }
                 //console.log(check)
                 //che chay theo j
                 //check chay theo i
-                for(var x = 0;x<check.length;x++){
-                    if(check[x]==0){
-                        check=[0];
+                for (var x = 0; x < check.length; x++) {
+                    if (check[x] == 0) {
+                        check = [0];
                         break;
                     }
-                    if(x+1==check.length){
-                        check=[1];
+                    if (x + 1 == check.length) {
+                        check = [1];
                     }
                 }
                 check2.push(check);
             }
             //var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, {$push:{  time: [convert], people: [numPeople]}});
         }
-        
-        for(var y = 0;y<check2.length;y++){
-            
-            for(var z = 0; z<check.length;z++){
-                if(check2[y]==0){
+
+
+
+        for (var y = 0; y < check2.length; y++) {
+
+            for (var z = 0; z < check.length; z++) {
+                if (check2[y] == 0) {
                     console.log("err")
                 }
-                if(check2[y]==1){
+                if (check2[y] == 1) {
                     console.log("update")
-                    var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, {$push:{  time: [convert], people: [numPeople],userId:[userId] ,dishesId:[0],notice:[0]},check:"1"});
-                    t=1;
+                    var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [0], notice: [notice] }, check: "1" });
+                    t = 1;
                     break;
                 }
-                
+
             }
-            if(t==1){
+            if (t == 1) {
                 break;
             }
         }
         console.log(check2)
         //check then send to client
-        if(t==1){
+        if (t == 1) {
             res.json("ok")
-        }else{
+        } else {
             res.json("err")
         }
         //res.json("ok")

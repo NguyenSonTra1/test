@@ -11,7 +11,8 @@ var Tables = mongoose.Schema({
     userId:{type:Array,default:[]},
     dishesId:{type:Array,default:[]},
     notice:{type:Array,default:[]},
-    check:{type:String, default:"0"}
+    check:{type:String, default:"0"},
+    distinction:{type:String, default:0}
 });
 
 
