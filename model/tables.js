@@ -7,7 +7,7 @@ var Tables = mongoose.Schema({
     category: String,
     time: {type:Array, default:[]},
     people:{type:Array, default:[]},
-    category:{type:String, default:"0"},
+    //ategory:{type:String, default:"0"},
     userId:{type:Array,default:[]},
     dishesId:{type:Array,default:[]},
     notice:{type:Array,default:[]},

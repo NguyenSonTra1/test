@@ -11,6 +11,7 @@ var Leader = require("../model/leaders")
 var Promotions = require("../model/promotions")
 var Tables = require("../model/tables");
 const { format } = require("path");
+const { findOneAndDelete } = require("../model/tables");
 
 module.exports = function (app) {
     //ADD DISHES
@@ -56,8 +57,16 @@ module.exports = function (app) {
     //DELETE DISHES
     app.post('/delete_dishes/:dishesId', async (req, res) => {
         var dishesId = req.params.dishesId;
-        var dishesDelete = await Dishes.deleteOne({ _id: dishesId })
-        res.json("ok")
+        var find =await Dishes.find({_id:dishesId})
+       console.log(find)
+        if (find == "") {
+            res.json("err")
+        } else {
+            var dishesDelete = await Dishes.deleteOne({ _id: dishesId })
+            res.json("ok")
+        }
+
+
     })
     //UPDATE DISHES
     app.post("/update_dishes/:dishesId", (req, res) => {
@@ -509,6 +518,13 @@ module.exports = function (app) {
         res.json("ok")
     })
 
+    //GET TABLE
+    app.get('/tables',async (req,res)=>{
+        var tables = await Tables.find({})
+        //var r = JSON.stringify(tables)
+        res.json(tables);
+    })
+
     //RESERVATION TABLES
     app.post('/reservation_tables/:userId', async (req, res) => {
         var t = 0;//check then send to client
@@ -536,7 +552,7 @@ module.exports = function (app) {
         if (people > 6 && people <= 8) people = 8;
         if (people > 8 && people <= 10) people = 10;
 
-        var tableAvailable = await Tables.find({ category: people, distinction:distinction})
+        var tableAvailable = await Tables.find({ category: people, distinction: distinction })
         for (var i = 0; i < tableAvailable.length; i++) {
             var check = [];
 
@@ -654,6 +670,71 @@ module.exports = function (app) {
             res.json("err")
         }
         //res.json("ok")
+
+    })
+
+    //UPDATE RESERVATION TABLES
+    app.post('/delete_tables/:tablename/:time/:userid', async (req, res) => {
+        var check = 0;
+        const tableName = req.params.tablename;
+        const time = req.params.time;
+        const userid = req.params.userid;
+        const one = time[0];
+        const two = time[1];
+        const three = time[2];
+        const four = time[3];
+        const five = time[4];
+        const six = time[5];
+        const seven = time[6];
+        const eight = time[7];
+        const nine = time[8];
+        const ten = time[9];
+        const eleven = time[10];
+        const twelve = time[11];
+        const Time = one + two + "-" + three + four + "-" + five + six + seven + eight + "-" + nine + ten + "-" + eleven + twelve;
+        const find = await Tables.find({ name: tableName })
+        for (var i = 0; i < find[0].time.length; i++) {
+            if (find[0].time[i] == Time) {
+                console.log("ok")
+                check = 1;
+                var Update = await Tables.updateOne({ name: tableName }, { $pull: { time: find[0].time[i] } });
+                var notice = find[0].notice;
+                var userId = find[0].userId;
+                var dishesId = find[0].dishesId;
+                var people = find[0].people;
+                notice.splice(i, 1)
+                userId.splice(i, 1)
+                dishesId.splice(i, 1);
+                people.splice(i, 1)
+                var Update = await Tables.updateOne({ name: tableName }, { $set: { notice: [] } }, { multi: true })
+                var Update = await Tables.updateOne({ name: tableName }, { $set: { userId: [] } }, { multi: true })
+                var Update = await Tables.updateOne({ name: tableName }, { $set: { dishesId: [] } }, { multi: true })
+                var Update = await Tables.updateOne({ name: tableName }, { $set: { people: [] } }, { multi: true })
+
+                for (var t = 0; t < notice.length; t++) {
+                    var Update3 = await Tables.updateOne({ name: tableName }, { $push: { notice: notice[t] } })
+                    var Update4 = await Tables.updateOne({ name: tableName }, { $push: { userId: userId[t] } })
+                    var Update5 = await Tables.updateOne({ name: tableName }, { $push: { dishesId: dishesId[t] } })
+                    var Update6 = await Tables.updateOne({ name: tableName }, { $push: { people: people[t] } })
+
+                }
+                if (find[0].time == "") {
+                    var Update2 = await Tables.updateOne({ name: find[0].name }, { check: "0" })
+                    //console.log("ok2")
+                }
+
+            }
+        }
+
+        if (check == 0) {
+            res.json("err");
+        } else {
+            res.json("ok");
+        }
+
+
+
+
 
     })
 
