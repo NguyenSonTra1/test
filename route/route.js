@@ -910,7 +910,11 @@ module.exports = function (app) {
         }
     })
 
-
+    //GET USER
+    app.get('/user',async (req,res)=>{
+        var User =await Users.find({})
+        res.json(User)
+    })
 
     //COMMENT
     app.post("/comments", async (req, res) => {
