@@ -10,9 +10,11 @@ var Feedbacks = require("../model/feedbacks")
 var Leader = require("../model/leaders")
 var Promotions = require("../model/promotions")
 var Tables = require("../model/tables");
+var Cart = require("../model/dishesReserve")
 const { format } = require("path");
 const { findOneAndDelete, findOneAndUpdate, findByIdAndUpdate } = require("../model/tables");
 const tables = require("../model/tables");
+const { json } = require("body-parser");
 
 module.exports = function (app) {
     //ADD DISHES
@@ -558,12 +560,12 @@ module.exports = function (app) {
     })
 
     //RESERVATION TABLES
-    app.post('/reservation_tables/:userId', async (req, res) => {
+    app.post('/reservation_tables/:userId/:check', async (req, res) => {
         var t = 0;//check then send to client
         var check2 = [];
         var distinction = req.body.distinction;
         var userId = req.params.userId;
-        var dishesId = req.body.dishesId;
+        var dish = req.params.check;
         var notice = req.body.notice;
         var date = req.body.date;
         var time = req.body.time;
@@ -583,16 +585,25 @@ module.exports = function (app) {
         if (people > 4 && people <= 6) people = 6;
         if (people > 6 && people <= 8) people = 8;
         if (people > 8 && people <= 10) people = 10;
-
+        //check cart
+        var dishesId = [0]
+        if (dish == 1) {
+            var cart = await Cart.find({ userId: userId, check: "0" })
+            dishesId = cart[0].dishesId;
+            var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
+        }
+        //
         var tableAvailable = await Tables.find({ category: people, distinction: distinction })
         for (var i = 0; i < tableAvailable.length; i++) {
             var check = [];
 
             if (tableAvailable[i].time == "") {
                 //console.log("ok")
-                var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [0], notice: [notice] }, check: "1" });
+                var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
                 t = 1;
                 break;
+
+
             }
             else {
                 for (var j = 0; j < tableAvailable[i].time.length; j++) {
@@ -684,7 +695,7 @@ module.exports = function (app) {
                 }
                 if (check2[y] == 1) {
                     console.log("update")
-                    var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [0], notice: [notice] }, check: "1" });
+                    var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
                     t = 1;
                     break;
                 }
@@ -896,7 +907,7 @@ module.exports = function (app) {
                     }
                 }
             }
-            var updateTables = await Tables.updateOne({ _id:tableIdTo }, { $push: { time: [Time_], people: [People], userId: [UserId], dishesId: [0], notice: [Notice] }, check: "1" });
+            var updateTables = await Tables.updateOne({ _id: tableIdTo }, { $push: { time: [Time_], people: [People], userId: [UserId], dishesId: [0], notice: [Notice] }, check: "1" });
 
         }
         else {
@@ -911,10 +922,48 @@ module.exports = function (app) {
     })
 
     //GET USER
-    app.get('/users',async (req,res)=>{
-        var User =await Users.find({})
+    app.get('/users', async (req, res) => {
+        var User = await Users.find({})
         res.json(User)
     })
+
+    //ADD DISHES RESERVATION
+    app.post('/add_cart/:userid', async (req, res) => {
+        var dishesId = req.body.dishesId;
+        var userId = req.params.userid;
+        var User = await Cart.find({ userId: userId, check: 0 })
+        if (User == "") {
+            var newCart = new Cart();
+            newCart.userId = userId;
+            newCart.dishesId = dishesId;
+            newCart.save();
+            res.json("ok")
+        } else {
+            var update = await Cart.findOneAndUpdate({ userId: userId, check: 0 }, { $push: { dishesId: [dishesId] } })
+            res.json("ok")
+        }
+
+    })
+
+    //DELETE DISHES RESERVATION
+    app.post('/delete_cart/:userid', async (req, res) => {
+        var dishesId = req.body.dishesId;
+        var userId = req.params.userid;
+        var user = await Cart.find({ userId: userId, check: 0 })
+        var dishesCopy = user[0].dishesId;
+        for (var i = 0; i < user[0].dishesId.length; i++) {
+            if (user[0].dishesId[i] == dishesId) {
+                dishesCopy.splice(i, 1)
+                console.log(dishesCopy)
+                var Update = await Cart.updateOne({ userId: userId, check: 0 }, { $set: { dishesId: [] } }, { multi: true })
+                var Update3 = await Cart.updateOne({ userId: userId, check: 0 }, { dishesId:dishesCopy})
+                break;
+            }
+            
+        }
+        res.json("ok")
+    })
+
 
     //COMMENT
     app.post("/comments", async (req, res) => {
