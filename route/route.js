@@ -11,6 +11,7 @@ var Leader = require("../model/leaders")
 var Promotions = require("../model/promotions")
 var Tables = require("../model/tables");
 var Cart = require("../model/dishesReserve")
+var Notification = require("../model/notification")
 const { format } = require("path");
 const { findOneAndDelete, findOneAndUpdate, findByIdAndUpdate } = require("../model/tables");
 const tables = require("../model/tables");
@@ -600,6 +601,11 @@ module.exports = function (app) {
             if (tableAvailable[i].time == "") {
                 //console.log("ok")
                 var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+                var newNotification = new Notification();
+                newNotification.tableName = tableAvailable[i].name;
+                newNotification.time = convert;
+                newNotification.userId = userId;
+                newNotification.save();
                 t = 1;
                 break;
 
@@ -696,6 +702,11 @@ module.exports = function (app) {
                 if (check2[y] == 1) {
                     console.log("update")
                     var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+                    var newNotification = new Notification();
+                    newNotification.tableName = tableAvailable[y].name;
+                    newNotification.time = convert;
+                    newNotification.userId = userId;
+                    newNotification.save();
                     t = 1;
                     break;
                 }
@@ -956,14 +967,18 @@ module.exports = function (app) {
                 dishesCopy.splice(i, 1)
                 console.log(dishesCopy)
                 var Update = await Cart.updateOne({ userId: userId, check: 0 }, { $set: { dishesId: [] } }, { multi: true })
-                var Update3 = await Cart.updateOne({ userId: userId, check: 0 }, { dishesId:dishesCopy})
+                var Update3 = await Cart.updateOne({ userId: userId, check: 0 }, { dishesId: dishesCopy })
                 break;
             }
-            
+
         }
         res.json("ok")
     })
-
+    //GET NOTIFICATION
+    app.get('/notification', async (req,res)=>{
+        var notification = await Notification.find({});
+        res.json(notification)
+    })
 
     //COMMENT
     app.post("/comments", async (req, res) => {
