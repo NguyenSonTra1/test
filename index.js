@@ -10,6 +10,11 @@ var cron = require('node-cron');
 var Tables = require("./model/tables");
 const { find } = require('./model/tables');
 
+app.use(function(req,res,next){
+    res.header("Access-Control-Allow-Origin","*");
+    res.header("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept")
+    next();
+})
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(bodyParser.json())
