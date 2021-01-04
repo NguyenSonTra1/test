@@ -12,6 +12,7 @@ var Promotions = require("../model/promotions")
 var Tables = require("../model/tables");
 var Cart = require("../model/dishesReserve")
 var Notification = require("../model/notification")
+var Favorite = require("../model/favorite")
 const { format } = require("path");
 const { findOneAndDelete, findOneAndUpdate, findByIdAndUpdate } = require("../model/tables");
 const tables = require("../model/tables");
@@ -980,22 +981,77 @@ module.exports = function (app) {
         res.json(notification)
     })
 
-    //COMMENT
-    app.post("/comments", async (req, res) => {
+    //COMMENT AND RATE
+    app.post("/comments/:userid", async (req, res) => {
         const dishId = req.body.dishId;
         const rating = req.body.rating;
         const comment = req.body.comment;
-        const author = req.body.author;
+        const userId = req.params.userid;
+        var user = await Users.find({_id: userId})
+        var userName = user[0].local.name;
         var newComments = new Comments();
         newComments.dishId = dishId;
         newComments.rating = rating;
         newComments.comment = comment;
-        newComments.author = author;
+        newComments.userName = userName;
         newComments.save();
         res.send("ok")
 
 
     })
+    //DELETE COMMENT
+    app.post('/delete_comments/:commentid', async (req,res)=>{
+        var commentId = req.params.commentid;
+        var comment = await Comments.deleteOne({_id:commentId})
+        res.json("ok")
+    })
+    //GET COMMENTS
+    app.get('/comments',async (req,res)=>{
+        var comment = await Comments.find({});
+        res.json(comment)
+    })
+
+    //ADD FAVORITE
+    app.post('/add_favorite/:userid', async (req, res) => {
+        var dishesId = req.body.dishesId;
+        var userId = req.params.userid;
+        var User = await Favorite.find({ userId: userId})
+        if (User == "") {
+            var newFavorite = new Favorite();
+            newFavorite.userId = userId;
+            newFavorite.dishesId = dishesId;
+            newFavorite.save();
+            res.json("ok")
+        } else {
+            var update = await Favorite.findOneAndUpdate({ userId: userId}, { $push: { dishesId: [dishesId] } })
+            res.json("ok")
+        }
+
+    })
+    //DELETE FAVORITE
+    app.post('/delete_favorite/:userid', async (req, res) => {
+        var dishesId = req.body.dishesId;
+        var userId = req.params.userid;
+        var user = await Favorite.find({ userId: userId})
+        var dishesCopy = user[0].dishesId;
+        for (var i = 0; i < user[0].dishesId.length; i++) {
+            if (user[0].dishesId[i] == dishesId) {
+                dishesCopy.splice(i, 1)
+                console.log(dishesCopy)
+                var Update = await Favorite.updateOne({ userId: userId }, { $set: { dishesId: [] } }, { multi: true })
+                var Update3 = await Favorite.updateOne({ userId: userId }, { dishesId: dishesCopy })
+                break;
+            }
+
+        }
+        res.json("ok")
+    })
+    //GET FAVORITE
+    app.get('/favorites', async (req,res)=>{
+        var favorite = await Favorite.find({})
+        res.json(favorite)
+    })
+
     app.get('/', (req, res) => {
         res.send("ok, this is the main page!")
     })

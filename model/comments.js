@@ -6,7 +6,7 @@ var Comments = mongoose.Schema({
     dishId:String,
     rating:String,
     comment: String,
-    author: String
+    userName: String
 });
 
 
