@@ -509,6 +509,35 @@ module.exports = function (app) {
 
         res.json({ recomMain, recomDessert, recomAppetizer, recomSide })
     })
+    //RECCOMMENT2 THEO LOAI
+    app.post('/reccomment2/:dishId',async (req,res)=>{
+        var dishId = req.params.dishId;
+        var dish = await Dishes.find({_id:dishId})
+        var cate = dish[0].category
+        var dish2 = await Dishes.find({category:cate,_id:{ $ne: dishId  }})
+        res.json(dish2)
+    })
+    //RECCOMMENT3 THEO LICH SU
+    app.post('/reccomment3/:userid', async (req,res)=>{
+        var userId = req.params.userid
+        var dish = await Cart.find({userId:userId,check:1})
+        var dishId = [];
+        var uniqueArray = []
+        for(var i = 0; i<dish.length;i++){
+            for(var j=0;j<dish[i].dishesId.length;j++){
+                var dis = dish[i].dishesId[j]
+                dishId.push(dis)
+                 uniqueArray = dishId.filter((item, index, array) => {
+                    return array.indexOf(item) === index
+                  })
+            }
+            
+        }
+
+        
+        res.json(uniqueArray)
+    })
+
 
     //ADD TABLES
     app.post('/add_tables', (req, res) => {
@@ -592,7 +621,7 @@ module.exports = function (app) {
         if (dish == 1) {
             var cart = await Cart.find({ userId: userId, check: "0" })
             dishesId = cart[0].dishesId;
-            var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
+            //var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
         }
         //
         var tableAvailable = await Tables.find({ category: people, distinction: distinction })
@@ -602,6 +631,7 @@ module.exports = function (app) {
             if (tableAvailable[i].time == "") {
                 //console.log("ok")
                 var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+                var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
                 var newNotification = new Notification();
                 newNotification.tableName = tableAvailable[i].name;
                 newNotification.time = convert;
@@ -703,6 +733,7 @@ module.exports = function (app) {
                 if (check2[y] == 1) {
                     console.log("update")
                     var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+                    var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
                     var newNotification = new Notification();
                     newNotification.tableName = tableAvailable[y].name;
                     newNotification.time = convert;
