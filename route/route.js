@@ -611,7 +611,7 @@ module.exports = function (app) {
         var Day = converDate[2];
         var convert = Hour + "-" + Min + "-" + date;
         //console.log(convert)
-        if (people <= 2) people = 2;
+        if (people > 0 && people <= 2) people = 2;
         if (people > 2 && people <= 4) people = 4;
         if (people > 4 && people <= 6) people = 6;
         if (people > 6 && people <= 8) people = 8;
@@ -1087,4 +1087,4 @@ module.exports = function (app) {
         res.send("ok, this is the main page!")
     })
 }
-//1
+//123
