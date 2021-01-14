@@ -610,6 +610,7 @@ module.exports = function (app) {
         var Month = converDate[1];
         var Day = converDate[2];
         var convert = Hour + "-" + Min + "-" + date;
+        if(people==10) people =9
         //console.log(convert)
         // if (people > 0 && people <= 2) people = 2;
         // if (people > 2 && people <= 4) people = 4;
