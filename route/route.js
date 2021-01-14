@@ -601,7 +601,7 @@ module.exports = function (app) {
         var date = req.body.date;
         var time = req.body.time;
         var people = req.body.people;
-        var numPeople = people;
+        var numPeople = parseInt(people)
         var convertTime = time.split(":")
         var converDate = date.split("-")
         var Hour = convertTime[0];
@@ -611,11 +611,11 @@ module.exports = function (app) {
         var Day = converDate[2];
         var convert = Hour + "-" + Min + "-" + date;
         //console.log(convert)
-        if (people > 0 && people <= 2) people = 2;
-        if (people > 2 && people <= 4) people = 4;
-        if (people > 4 && people <= 6) people = 6;
-        if (people > 6 && people <= 8) people = 8;
-        if (people > 8 && people <= 10) people = 10;
+        // if (people > 0 && people <= 2) people = 2;
+        // if (people > 2 && people <= 4) people = 4;
+        // if (people > 4 && people <= 6) people = 6;
+        // if (people > 6 && people <= 8) people = 8;
+        // if (people > 8 && people <= 10) people = 10;
         //check cart
         var dishesId = [0]
         if (dish == 1) {
@@ -624,12 +624,13 @@ module.exports = function (app) {
             //var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
         }
         //
-        var tableAvailable = await Tables.find({ category: people, distinction: distinction })
+        var tableAvailable = await Tables.find({  category:{$gte:people},distinction: distinction })
+        console.log(tableAvailable)
         for (var i = 0; i < tableAvailable.length; i++) {
             var check = [];
 
             if (tableAvailable[i].time == "") {
-                //console.log("ok")
+                console.log("ok")
                 var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
                 var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
                 var newNotification = new Notification();
@@ -758,6 +759,175 @@ module.exports = function (app) {
         //res.json("ok")
 
     })
+
+    // //RESERVATION TABLES
+    // app.post('/reservation_tables/:userId/:check', async (req, res) => {
+    //     var t = 0;//check then send to client
+    //     var check2 = [];
+    //     var distinction = req.body.distinction;
+    //     var userId = req.params.userId;
+    //     var dish = req.params.check;
+    //     var notice = req.body.notice;
+    //     var date = req.body.date;
+    //     var time = req.body.time;
+    //     var people = req.body.people;
+    //     var numPeople = people;
+    //     var convertTime = time.split(":")
+    //     var converDate = date.split("-")
+    //     var Hour = convertTime[0];
+    //     var Min = convertTime[1];
+    //     var Year = converDate[0];
+    //     var Month = converDate[1];
+    //     var Day = converDate[2];
+    //     var convert = Hour + "-" + Min + "-" + date;
+    //     //console.log(convert)
+    //     if (people > 0 && people <= 2) people = 2;
+    //     if (people > 2 && people <= 4) people = 4;
+    //     if (people > 4 && people <= 6) people = 6;
+    //     if (people > 6 && people <= 8) people = 8;
+    //     if (people > 8 && people <= 10) people = 10;
+    //     //check cart
+    //     var dishesId = [0]
+    //     if (dish == 1) {
+    //         var cart = await Cart.find({ userId: userId, check: "0" })
+    //         dishesId = cart[0].dishesId;
+    //         //var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
+    //     }
+    //     //
+    //     var tableAvailable = await Tables.find({ category: people, distinction: distinction })
+    //     for (var i = 0; i < tableAvailable.length; i++) {
+    //         var check = [];
+
+    //         if (tableAvailable[i].time == "") {
+    //             //console.log("ok")
+    //             var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+    //             var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
+    //             var newNotification = new Notification();
+    //             newNotification.tableName = tableAvailable[i].name;
+    //             newNotification.time = convert;
+    //             newNotification.userId = userId;
+    //             newNotification.save();
+    //             t = 1;
+    //             break;
+
+
+    //         }
+    //         else {
+    //             for (var j = 0; j < tableAvailable[i].time.length; j++) {
+    //                 var che = 0;
+    //                 //console.log(tableAvailable[i].time[j])
+    //                 var transTime = tableAvailable[i].time[j].split("-")
+    //                 //console.log(transTime)
+    //                 var hour = transTime[0];
+    //                 var min = transTime[1];
+    //                 var year = transTime[2];
+    //                 var month = transTime[3];
+    //                 var day = transTime[4];
+
+    //                 if (Year == year && Month == month && Day == day) {
+    //                     // console.log("yyyy")
+    //                     if (min == 00) {
+    //                         //console.log("00")
+    //                         if (Hour == hour && Min == 30) {
+    //                             // console.log("01")
+    //                             che = 0;
+
+    //                         } else
+    //                             if (Hour == hour && Min == min) {
+    //                                 //console.log("02")
+    //                                 che = 0;
+
+    //                             } else
+    //                                 if (Hour == hour - 1 && Min == 30) {
+    //                                     //console.log("03")
+    //                                     che = 0;
+
+    //                                 }
+    //                                 else {
+    //                                     //console.log("04")
+    //                                     che = 1;
+
+    //                                 }
+    //                     }
+    //                     if (min == 30) {
+    //                         //console.log("30")
+    //                         if (Hour == hour && Min == 0) {
+    //                             che = 0;
+
+    //                         } else if (Hour == hour && Min == min) {
+    //                             //console.log("02")
+    //                             che = 0;
+
+    //                         } else if (Hour + 1 == hour && Min == 0) {
+    //                             //console.log("03")
+    //                             che = 0
+
+    //                         } else {
+    //                             //console.log("04")
+    //                             che = 1;
+
+    //                         }
+    //                     }
+    //                 } else {
+    //                     //console.log("auto")
+    //                     che = 1;
+    //                 }
+
+    //                 check.push(che)
+    //             }
+    //             //console.log(check)
+    //             //che chay theo j
+    //             //check chay theo i
+    //             for (var x = 0; x < check.length; x++) {
+    //                 if (check[x] == 0) {
+    //                     check = [0];
+    //                     break;
+    //                 }
+    //                 if (x + 1 == check.length) {
+    //                     check = [1];
+    //                 }
+    //             }
+    //             check2.push(check);
+    //         }
+    //         //var updateTables = await Tables.updateOne({ name: tableAvailable[i].name }, {$push:{  time: [convert], people: [numPeople]}});
+    //     }
+
+
+
+    //     for (var y = 0; y < check2.length; y++) {
+
+    //         for (var z = 0; z < check.length; z++) {
+    //             if (check2[y] == 0) {
+    //                 console.log("err")
+    //             }
+    //             if (check2[y] == 1) {
+    //                 console.log("update")
+    //                 var updateTables = await Tables.updateOne({ name: tableAvailable[y].name }, { $push: { time: [convert], people: [numPeople], userId: [userId], dishesId: [dishesId], notice: [notice] }, check: "1" });
+    //                 var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
+    //                 var newNotification = new Notification();
+    //                 newNotification.tableName = tableAvailable[y].name;
+    //                 newNotification.time = convert;
+    //                 newNotification.userId = userId;
+    //                 newNotification.save();
+    //                 t = 1;
+    //                 break;
+    //             }
+
+    //         }
+    //         if (t == 1) {
+    //             break;
+    //         }
+    //     }
+    //     console.log(check2)
+    //     //check then send to client
+    //     if (t == 1) {
+    //         res.json("ok")
+    //     } else {
+    //         res.json("err")
+    //     }
+    //     //res.json("ok")
+
+    // })
 
     //DELETE RESERVATION TABLES
     app.post('/delete_reservation_tables/:tableId/:time/:userid', async (req, res) => {
