@@ -510,31 +510,31 @@ module.exports = function (app) {
         res.json({ recomMain, recomDessert, recomAppetizer, recomSide })
     })
     //RECCOMMENT2 THEO LOAI
-    app.post('/reccomment2/:dishId',async (req,res)=>{
+    app.post('/reccomment2/:dishId', async (req, res) => {
         var dishId = req.params.dishId;
-        var dish = await Dishes.find({_id:dishId})
+        var dish = await Dishes.find({ _id: dishId })
         var cate = dish[0].category
-        var dish2 = await Dishes.find({category:cate,_id:{ $ne: dishId  }})
+        var dish2 = await Dishes.find({ category: cate, _id: { $ne: dishId } })
         res.json(dish2)
     })
     //RECCOMMENT3 THEO LICH SU
-    app.post('/reccomment3/:userid', async (req,res)=>{
+    app.post('/reccomment3/:userid', async (req, res) => {
         var userId = req.params.userid
-        var dish = await Cart.find({userId:userId,check:1})
+        var dish = await Cart.find({ userId: userId, check: 1 })
         var dishId = [];
         var uniqueArray = []
-        for(var i = 0; i<dish.length;i++){
-            for(var j=0;j<dish[i].dishesId.length;j++){
+        for (var i = 0; i < dish.length; i++) {
+            for (var j = 0; j < dish[i].dishesId.length; j++) {
                 var dis = dish[i].dishesId[j]
                 dishId.push(dis)
-                 uniqueArray = dishId.filter((item, index, array) => {
+                uniqueArray = dishId.filter((item, index, array) => {
                     return array.indexOf(item) === index
-                  })
+                })
             }
-            
+
         }
 
-        
+
         res.json(uniqueArray)
     })
 
@@ -610,7 +610,7 @@ module.exports = function (app) {
         var Month = converDate[1];
         var Day = converDate[2];
         var convert = Hour + "-" + Min + "-" + date;
-        if(people==10) people =9
+        if (people == 10) people = 9
         //console.log(convert)
         // if (people > 0 && people <= 2) people = 2;
         // if (people > 2 && people <= 4) people = 4;
@@ -621,11 +621,25 @@ module.exports = function (app) {
         var dishesId = [0]
         if (dish == 1) {
             var cart = await Cart.find({ userId: userId, check: "0" })
-            dishesId = cart[0].dishesId;
+            var dishId = [];
+            for (var i = 0; i < cart.length; i++) {
+                for (var j = 0; j < cart[i].dishesId.length; j++) {
+                    var dis =cart[i].dishesId[j]
+                    dishId.push(dis)
+                    dishesId = dishId.filter((item, index, array) => {
+                        return array.indexOf(item) === index
+                    })
+                }
+
+            }
+            //dishesId = cart[0].dishesId;
+            var dish = await Cart.find({ userId: userId, check: 1 })
+            
+           
             //var cart2 = await Cart.updateOne({ userId: userId, check: "0" }, { check: "1" })
         }
         //
-        var tableAvailable = await Tables.find({  category:{$gte:people},distinction: distinction })
+        var tableAvailable = await Tables.find({ category: { $gte: people }, distinction: distinction })
         console.log(tableAvailable)
         for (var i = 0; i < tableAvailable.length; i++) {
             var check = [];
@@ -1158,7 +1172,7 @@ module.exports = function (app) {
         }
 
     })
-    
+
     //DELETE DISHES RESERVATION
     app.post('/delete_cart/:userid', async (req, res) => {
         var dishesId = req.body.dishesId;
@@ -1178,27 +1192,27 @@ module.exports = function (app) {
         res.json("ok")
     })
     //GET DISHES RESERVATION
-    app.get('/cart/:userid', async (req,res)=>{
+    app.get('/cart/:userid', async (req, res) => {
         var userId = req.params.userid
-        var dish = await Cart.find({userId:userId,check:0})
+        var dish = await Cart.find({ userId: userId, check: 0 })
         var dishId = [];
         var uniqueArray = []
-        for(var i = 0; i<dish.length;i++){
-            for(var j=0;j<dish[i].dishesId.length;j++){
+        for (var i = 0; i < dish.length; i++) {
+            for (var j = 0; j < dish[i].dishesId.length; j++) {
                 var dis = dish[i].dishesId[j]
                 dishId.push(dis)
-                 uniqueArray = dishId.filter((item, index, array) => {
+                uniqueArray = dishId.filter((item, index, array) => {
                     return array.indexOf(item) === index
-                  })
+                })
             }
-            
+
         }
 
-        
+
         res.json(uniqueArray)
     })
     //GET NOTIFICATION
-    app.get('/notification', async (req,res)=>{
+    app.get('/notification', async (req, res) => {
         var notification = await Notification.find({});
         res.json(notification)
     })
@@ -1209,7 +1223,7 @@ module.exports = function (app) {
         const rating = req.body.rating;
         const comment = req.body.comment;
         const userId = req.params.userid;
-        var user = await Users.find({_id: userId})
+        var user = await Users.find({ _id: userId })
         var userName = user[0].local.name;
         var newComments = new Comments();
         newComments.dishId = dishId;
@@ -1222,13 +1236,13 @@ module.exports = function (app) {
 
     })
     //DELETE COMMENT
-    app.post('/delete_comments/:commentid', async (req,res)=>{
+    app.post('/delete_comments/:commentid', async (req, res) => {
         var commentId = req.params.commentid;
-        var comment = await Comments.deleteOne({_id:commentId})
+        var comment = await Comments.deleteOne({ _id: commentId })
         res.json("ok")
     })
     //GET COMMENTS
-    app.get('/comments',async (req,res)=>{
+    app.get('/comments', async (req, res) => {
         var comment = await Comments.find({});
         res.json(comment)
     })
@@ -1237,7 +1251,7 @@ module.exports = function (app) {
     app.post('/add_favorite/:userid', async (req, res) => {
         var dishesId = req.body.dishesId;
         var userId = req.params.userid;
-        var User = await Favorite.find({ userId: userId})
+        var User = await Favorite.find({ userId: userId })
         if (User == "") {
             var newFavorite = new Favorite();
             newFavorite.userId = userId;
@@ -1245,7 +1259,7 @@ module.exports = function (app) {
             newFavorite.save();
             res.json("ok")
         } else {
-            var update = await Favorite.findOneAndUpdate({ userId: userId}, { $push: { dishesId: [dishesId] } })
+            var update = await Favorite.findOneAndUpdate({ userId: userId }, { $push: { dishesId: [dishesId] } })
             res.json("ok")
         }
 
@@ -1254,7 +1268,7 @@ module.exports = function (app) {
     app.post('/delete_favorite/:userid', async (req, res) => {
         var dishesId = req.body.dishesId;
         var userId = req.params.userid;
-        var user = await Favorite.find({ userId: userId})
+        var user = await Favorite.find({ userId: userId })
         var dishesCopy = user[0].dishesId;
         for (var i = 0; i < user[0].dishesId.length; i++) {
             if (user[0].dishesId[i] == dishesId) {
@@ -1269,7 +1283,7 @@ module.exports = function (app) {
         res.json("ok")
     })
     //GET FAVORITE
-    app.get('/favorites', async (req,res)=>{
+    app.get('/favorites', async (req, res) => {
         var favorite = await Favorite.find({})
         res.json(favorite)
     })
