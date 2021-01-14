@@ -987,7 +987,7 @@ module.exports = function (app) {
         }
 
     })
-
+    
     //DELETE DISHES RESERVATION
     app.post('/delete_cart/:userid', async (req, res) => {
         var dishesId = req.body.dishesId;
@@ -1005,6 +1005,26 @@ module.exports = function (app) {
 
         }
         res.json("ok")
+    })
+    //GET DISHES RESERVATION
+    app.get('/cart/:userid', async (req,res)=>{
+        var userId = req.params.userid
+        var dish = await Cart.find({userId:userId,check:0})
+        var dishId = [];
+        var uniqueArray = []
+        for(var i = 0; i<dish.length;i++){
+            for(var j=0;j<dish[i].dishesId.length;j++){
+                var dis = dish[i].dishesId[j]
+                dishId.push(dis)
+                 uniqueArray = dishId.filter((item, index, array) => {
+                    return array.indexOf(item) === index
+                  })
+            }
+            
+        }
+
+        
+        res.json(uniqueArray)
     })
     //GET NOTIFICATION
     app.get('/notification', async (req,res)=>{
